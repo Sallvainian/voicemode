@@ -5,13 +5,12 @@
 [![PyPI Downloads](https://static.pepy.tech/badge/voice-mode)](https://pepy.tech/project/voice-mode)
 [![PyPI Downloads](https://static.pepy.tech/badge/voice-mode/month)](https://pepy.tech/project/voice-mode)
 [![PyPI Downloads](https://static.pepy.tech/badge/voice-mode/week)](https://pepy.tech/project/voice-mode)
-[![Documentation](https://readthedocs.org/projects/voice-mode/badge/?version=latest)](https://voice-mode.readthedocs.io/en/latest/?badge=latest)
 
-Natural voice conversations for AI assistants. Voice Mode brings human-like voice interactions to Claude Code, AI code editors through the Model Context Protocol (MCP).
+Natural voice conversations for AI assistants. Voice Mode brings human-like voice interactions to Claude, ChatGPT, and other LLMs through the Model Context Protocol (MCP).
 
 ## 🖥️ Compatibility
 
-**Runs on:** Linux • macOS • Windows (WSL) • NixOS | **Python:** 3.10+
+**Runs on:** Linux • macOS • Windows (WSL) | **Python:** 3.10+
 
 ## ✨ Features
 
@@ -26,40 +25,20 @@ Natural voice conversations for AI assistants. Voice Mode brings human-like voic
 
 **All you need to get started:**
 
-1. **🎤 Computer with microphone and speakers** OR **☁️ LiveKit server** ([LiveKit Cloud](https://docs.livekit.io/home/cloud/) or [self-hosted](https://github.com/livekit/livekit))
-2. **🔑 OpenAI API Key** (optional) - Voice Mode can install free, open-source transcription and text-to-speech services locally
+1. **🔑 OpenAI API Key** (or compatible service) - for speech-to-text and text-to-speech
+2. **🎤 Computer with microphone and speakers** OR **☁️ LiveKit server** ([LiveKit Cloud](https://docs.livekit.io/home/cloud/) or [self-hosted](https://github.com/livekit/livekit))
 
 ## Quick Start
 
-> 📖 **Using a different tool?** See our [Integration Guides](docs/integrations/README.md) for Cursor, VS Code, Gemini CLI, and more!
-
-### Automatic Installation (Recommended)
-
-Install Claude Code with Voice Mode configured and ready to run on Linux, macOS, and Windows WSL:
+> 📖 **Using a different tool?** See our [Integration Guides](integrations/README.md) for Cursor, VS Code, Gemini CLI, and more!
 
 ```bash
-curl -O https://getvoicemode.com/install.sh && bash install.sh
-```
-
-This installer will:
-- Install all system dependencies (Node.js, audio libraries, etc.)
-- Install Claude Code if not already installed
-- Configure Voice Mode as an MCP server
-- Set up your system for voice conversations
-
-After installation, just run:
-```bash
-# With OpenAI API (cloud-based, requires API key)
+npm install -g @anthropic-ai/claude-code
+curl -LsSf https://astral.sh/uv/install.sh | sh
+claude mcp add --scope user voice-mode uvx voice-mode
 export OPENAI_API_KEY=your-openai-key
 claude converse
-
-# Or use free local services (Voice Mode will offer to install them)
-claude converse
 ```
-
-### Manual Installation
-
-For manual setup steps, see the [Claude Code Integration Guide](docs/integrations/claude-code/README.md).
 
 ## 🎬 Demo
 
@@ -77,38 +56,27 @@ See Voice Mode working with Google's Gemini CLI (their implementation of Claude 
 
 Once configured, try these prompts with Claude:
 
-### 👨‍💻 Programming & Development
-- `"Let's debug this error together"` - Explain the issue verbally, paste code, and discuss solutions
-- `"Walk me through this code"` - Have Claude explain complex code while you ask questions
-- `"Let's brainstorm the architecture"` - Design systems through natural conversation
-- `"Help me write tests for this function"` - Describe requirements and iterate verbally
+- `"Let's have a voice conversation"`
+- `"Ask me about my day using voice"`
+- `"Tell me a joke"` (Claude will speak and wait for your response)
+- `"Say goodbye"` (Claude will speak without waiting)
 
-### 💡 General Productivity  
-- `"Let's do a daily standup"` - Practice presentations or organize your thoughts
-- `"Interview me about [topic]"` - Prepare for interviews with back-and-forth Q&A
-- `"Be my rubber duck"` - Explain problems out loud to find solutions
-
-### 🎯 Voice Control Features
-- `"Read this error message"` (Claude speaks, then waits for your response)
-- `"Just give me a quick summary"` (Claude speaks without waiting)
-- Use `converse("message", wait_for_response=False)` for one-way announcements
-
-The `converse` function makes voice interactions natural - it automatically waits for your response by default, creating a real conversation flow.
+The new `converse` function makes voice interactions more natural - it automatically waits for your response by default.
 
 ## Supported Tools
 
 Voice Mode works with your favorite AI coding assistants:
 
-- 🤖 **[Claude Code](docs/integrations/claude-code/README.md)** - Anthropic's official CLI
-- 🖥️ **[Claude Desktop](docs/integrations/claude-desktop/README.md)** - Desktop application
-- 🌟 **[Gemini CLI](docs/integrations/gemini-cli/README.md)** - Google's CLI tool
-- ⚡ **[Cursor](docs/integrations/cursor/README.md)** - AI-first code editor
-- 💻 **[VS Code](docs/integrations/vscode/README.md)** - With MCP preview support
-- 🦘 **[Roo Code](docs/integrations/roo-code/README.md)** - AI dev team in VS Code
-- 🔧 **[Cline](docs/integrations/cline/README.md)** - Autonomous coding agent
-- ⚡ **[Zed](docs/integrations/zed/README.md)** - High-performance editor
-- 🏄 **[Windsurf](docs/integrations/windsurf/README.md)** - Agentic IDE by Codeium
-- 🔄 **[Continue](docs/integrations/continue/README.md)** - Open-source AI assistant
+- 🤖 **[Claude Code](integrations/claude-code/README.md)** - Anthropic's official CLI
+- 🖥️ **[Claude Desktop](integrations/claude-desktop/README.md)** - Desktop application
+- 🌟 **[Gemini CLI](integrations/gemini-cli/README.md)** - Google's CLI tool
+- ⚡ **[Cursor](integrations/cursor/README.md)** - AI-first code editor
+- 💻 **[VS Code](integrations/vscode/README.md)** - With MCP preview support
+- 🦘 **[Roo Code](integrations/roo-code/README.md)** - AI dev team in VS Code
+- 🔧 **[Cline](integrations/cline/README.md)** - Autonomous coding agent
+- ⚡ **[Zed](integrations/zed/README.md)** - High-performance editor
+- 🏄 **[Windsurf](integrations/windsurf/README.md)** - Agentic IDE by Codeium
+- 🔄 **[Continue](integrations/continue/README.md)** - Open-source AI assistant
 
 ## Installation
 
@@ -123,11 +91,8 @@ Voice Mode works with your favorite AI coding assistants:
 <summary><strong>Ubuntu/Debian</strong></summary>
 
 ```bash
-sudo apt update
-sudo apt install -y python3-dev libasound2-dev libasound2-plugins libportaudio2 portaudio19-dev ffmpeg pulseaudio pulseaudio-utils
+sudo apt install python3-dev libasound2-dev libportaudio2 portaudio19-dev ffmpeg
 ```
-
-**Note for WSL2 users**: WSL2 requires additional audio packages (pulseaudio, libasound2-plugins) for microphone access. See our [WSL2 Microphone Access Guide](docs/user-guide/wsl2-microphone-setup.md) if you encounter issues.
 </details>
 
 <details>
@@ -146,7 +111,7 @@ sudo dnf install python3-devel alsa-lib-devel portaudio-devel ffmpeg
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Install dependencies
-brew install portaudio ffmpeg cmake
+brew install portaudio ffmpeg
 ```
 </details>
 
@@ -156,41 +121,22 @@ brew install portaudio ffmpeg cmake
 Follow the Ubuntu/Debian instructions above within WSL.
 </details>
 
-<details>
-<summary><strong>NixOS</strong></summary>
-
-Voice Mode includes a flake.nix with all required dependencies. You can either:
-
-1. **Use the development shell** (temporary):
-```bash
-nix develop github:mbailey/voicemode
-```
-
-2. **Install system-wide** (see Installation section below)
-</details>
-
 ### Quick Install
 
 ```bash
 # Using Claude Code (recommended)
 claude mcp add --scope user voice-mode uvx voice-mode
 
-# Using Claude Code with Nix (NixOS)
-claude mcp add voice-mode nix run github:mbailey/voicemode
-
 # Using UV
 uvx voice-mode
 
 # Using pip
 pip install voice-mode
-
-# Using Nix (NixOS)
-nix run github:mbailey/voicemode
 ```
 
 ### Configuration for AI Coding Assistants
 
-> 📖 **Looking for detailed setup instructions?** Check our comprehensive [Integration Guides](docs/integrations/README.md) for step-by-step instructions for each tool!
+> 📖 **Looking for detailed setup instructions?** Check our comprehensive [Integration Guides](integrations/README.md) for step-by-step instructions for each tool!
 
 Below are quick configuration snippets. For full installation and setup instructions, see the integration guides above.
 
@@ -368,12 +314,7 @@ Add to your Zed settings.json:
 <details>
 <summary><strong>Roo Code</strong></summary>
 
-1. Open VS Code Settings (`Ctrl/Cmd + ,`)
-2. Search for "roo" in the settings search bar
-3. Find "Roo-veterinaryinc.roo-cline → settings → Mcp_settings.json"
-4. Click "Edit in settings.json"
-5. Add Voice Mode configuration:
-
+Add to your Roo Code MCP configuration:
 ```json
 {
   "mcpServers": {
@@ -422,36 +363,6 @@ pip install -e .
 ```
 </details>
 
-<details>
-<summary><strong>NixOS Installation Options</strong></summary>
-
-**1. Install with nix profile (user-wide):**
-```bash
-nix profile install github:mbailey/voicemode
-```
-
-**2. Add to NixOS configuration (system-wide):**
-```nix
-# In /etc/nixos/configuration.nix
-environment.systemPackages = [
-  (builtins.getFlake "github:mbailey/voicemode").packages.${pkgs.system}.default
-];
-```
-
-**3. Add to home-manager:**
-```nix
-# In home-manager configuration
-home.packages = [
-  (builtins.getFlake "github:mbailey/voicemode").packages.${pkgs.system}.default
-];
-```
-
-**4. Run without installing:**
-```bash
-nix run github:mbailey/voicemode
-```
-</details>
-
 ## Tools
 
 | Tool | Description | Key Parameters |
@@ -463,17 +374,13 @@ nix run github:mbailey/voicemode
 | `start_kokoro` | Start the Kokoro TTS service | `models_dir` (optional, defaults to ~/Models/kokoro) |
 | `stop_kokoro` | Stop the Kokoro TTS service | None |
 | `kokoro_status` | Check the status of Kokoro TTS service | None |
-| `install_whisper_cpp` | Install whisper.cpp for local STT | `install_dir`, `model` (default: base.en), `use_gpu` (auto-detect) |
-| `install_kokoro_fastapi` | Install kokoro-fastapi for local TTS | `install_dir`, `port` (default: 8880), `auto_start` (default: true) |
 
 **Note:** The `converse` tool is the primary interface for voice interactions, combining speaking and listening in a natural flow.
 
-**New:** The `install_whisper_cpp` and `install_kokoro_fastapi` tools help you set up free, private, open-source voice services locally. See [Installation Tools Documentation](docs/installation-tools.md) for detailed usage.
-
 ## Configuration
 
-- 📖 **[Integration Guides](docs/integrations/README.md)** - Step-by-step setup for each tool
-- 🔧 **[Configuration Reference](docs/reference/configuration.md)** - All environment variables
+- 📖 **[Integration Guides](integrations/README.md)** - Step-by-step setup for each tool
+- 🔧 **[Configuration Reference](configuration.md)** - All environment variables
 - 📁 **[Config Examples](config-examples/)** - Ready-to-use configuration files
 
 ### Quick Setup
@@ -491,10 +398,6 @@ export OPENAI_API_KEY="your-key"
 export STT_BASE_URL="http://127.0.0.1:2022/v1"  # Local Whisper
 export TTS_BASE_URL="http://127.0.0.1:8880/v1"  # Local TTS
 export TTS_VOICE="alloy"                        # Voice selection
-
-# Or use voice preference files (see Configuration docs)
-# Project: /your-project/voices.txt or /your-project/.voicemode/voices.txt
-# User: ~/voices.txt or ~/.voicemode/voices.txt
 
 # LiveKit (for room-based communication)
 # See docs/livekit/ for setup guide
@@ -535,8 +438,8 @@ The audio format is automatically validated against provider capabilities and wi
 
 For privacy-focused or offline usage, Voice Mode supports local speech services:
 
-- **[Whisper.cpp](docs/whisper.cpp.md)** - Local speech-to-text with OpenAI-compatible API
-- **[Kokoro](docs/kokoro.md)** - Local text-to-speech with multiple voice options
+- **[Whisper.cpp](whisper.cpp.md)** - Local speech-to-text with OpenAI-compatible API
+- **[Kokoro](kokoro.md)** - Local text-to-speech with multiple voice options
 
 These services provide the same API interface as OpenAI, allowing seamless switching between cloud and local processing.
 
@@ -582,7 +485,7 @@ The OpenAI SDK handles this automatically - no Voice Mode configuration needed!
 ### Common Issues
 
 - **No microphone access**: Check system permissions for terminal/application
-  - **WSL2 Users**: See [WSL2 Microphone Access Guide](docs/user-guide/wsl2-microphone-setup.md)
+  - **WSL2 Users**: See [WSL2 Microphone Access Guide](troubleshooting/wsl2-microphone-access.md)
 - **UV not found**: Install with `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **OpenAI API error**: Verify your `OPENAI_API_KEY` is set correctly
 - **No audio output**: Check system audio settings and available devices
@@ -619,32 +522,28 @@ Audio files are saved to: `~/voicemode_audio/` with timestamps in the filename.
 
 ## Documentation
 
-📚 **[Read the full documentation at voice-mode.readthedocs.io](https://voice-mode.readthedocs.io)**
-
 ### Getting Started
-- **[Integration Guides](docs/integrations/README.md)** - Step-by-step setup for all supported tools
-- **[Configuration Guide](docs/reference/configuration.md)** - Complete environment variable reference
+- **[Integration Guides](integrations/README.md)** - Step-by-step setup for all supported tools
+- **[Configuration Guide](configuration.md)** - Complete environment variable reference
 
 ### Development
-- **[Using uv/uvx](docs/developer/uv-package-manager.md)** - Package management with uv and uvx
-- **[Local Development](docs/developer/local-development.md)** - Development setup guide
-- **[Audio Formats](docs/reference/audio-formats.md)** - Audio format configuration and migration
-- **[Statistics Dashboard](docs/reference/statistics.md)** - Performance monitoring and metrics
+- **[Using uv/uvx](uv.md)** - Package management with uv and uvx
+- **[Local Development](local-development-uvx.md)** - Development setup guide
+- **[Audio Formats](audio-format-migration.md)** - Audio format configuration and migration
+- **[Statistics Dashboard](statistics-dashboard.md)** - Performance monitoring and metrics
 
 ### Service Guides
-- **[Whisper.cpp Setup](docs/services/whisper-advanced.md)** - Local speech-to-text configuration
-- **[Kokoro Setup](docs/services/kokoro-advanced.md)** - Local text-to-speech configuration
-- **[Service Health Checks](docs/services/health-checks.md)** - Service readiness and health monitoring
-- **[LiveKit Integration](docs/services/livekit/README.md)** - Real-time voice communication
+- **[Whisper.cpp Setup](whisper.cpp.md)** - Local speech-to-text configuration
+- **[Kokoro Setup](kokoro.md)** - Local text-to-speech configuration
+- **[LiveKit Integration](livekit/README.md)** - Real-time voice communication
 
 ### Troubleshooting
-- **[WSL2 Microphone Access](docs/user-guide/wsl2-microphone-setup.md)** - WSL2 audio setup
-- **[Migration Guide](docs/developer/migration-guide.md)** - Upgrading from older versions
+- **[WSL2 Microphone Access](troubleshooting/wsl2-microphone-access.md)** - WSL2 audio setup
+- **[Migration Guide](migration-guide.md)** - Upgrading from older versions
 
 ## Links
 
 - **Website**: [getvoicemode.com](https://getvoicemode.com)
-- **Documentation**: [voice-mode.readthedocs.io](https://voice-mode.readthedocs.io)
 - **GitHub**: [github.com/mbailey/voicemode](https://github.com/mbailey/voicemode)
 - **PyPI**: [pypi.org/project/voice-mode](https://pypi.org/project/voice-mode/)
 - **npm**: [npmjs.com/package/voicemode](https://www.npmjs.com/package/voicemode)
@@ -657,10 +556,10 @@ Audio files are saved to: `~/voicemode_audio/` with timestamps in the filename.
 
 ## See Also
 
-- 🚀 [Integration Guides](docs/integrations/README.md) - Setup instructions for all supported tools
-- 🔧 [Configuration Reference](docs/configuration.md) - Environment variables and options
-- 🎤 [Local Services Setup](docs/kokoro.md) - Run TTS/STT locally for privacy
-- 🐛 [Troubleshooting](docs/troubleshooting/README.md) - Common issues and solutions
+- 🚀 [Integration Guides](integrations/README.md) - Setup instructions for all supported tools
+- 🔧 [Configuration Reference](configuration.md) - Environment variables and options
+- 🎤 [Local Services Setup](kokoro.md) - Run TTS/STT locally for privacy
+- 🐛 [Troubleshooting](troubleshooting/README.md) - Common issues and solutions
 
 ## License
 
@@ -668,4 +567,4 @@ MIT - A [Failmode](https://failmode.com) Project
 
 ---
 
-<sub>[Project Statistics](docs/project-stats/README.md)</sub>
+<sub>[Project Statistics](project-stats/README.md)</sub>

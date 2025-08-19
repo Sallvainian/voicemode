@@ -1,0 +1,21 @@
+{
+  "platform": "[Platform Name]",
+  "account": "@[username]",
+  "last_updated": "2025-07-06",
+  "metrics": {
+    "followers": 0,
+    "engagement_rate": 0,
+    "posts_this_week": 0,
+    "responses_this_week": 0,
+    "clicks_to_voice_mode": 0
+  },
+  "growth": {
+    "followers_change": 0,
+    "percent_change": 0
+  },
+  "top_content": {
+    "most_engaged_post": "",
+    "best_performing_type": ""
+  },
+  "notes": ""
+}
