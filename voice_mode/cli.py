@@ -57,18 +57,21 @@ def voice_mode() -> None:
 
 # Service group commands
 @voice_mode_main_cli.group()
+@click.help_option('-h', '--help')
 def kokoro():
     """Manage Kokoro TTS service."""
     pass
 
 
 @voice_mode_main_cli.group()
+@click.help_option('-h', '--help')
 def whisper():
     """Manage Whisper STT service."""
     pass
 
 
 @voice_mode_main_cli.group()
+@click.help_option('-h', '--help')
 def livekit():
     """Manage LiveKit RTC service."""
     pass
@@ -421,6 +424,7 @@ def uninstall(remove_models, remove_all_data):
 
 
 @whisper.group("model")
+@click.help_option('-h', '--help')
 def whisper_model():
     """Manage Whisper models.
     
@@ -853,6 +857,7 @@ def uninstall(remove_config, remove_all_data):
 
 # LiveKit frontend subcommands
 @livekit.group()
+@click.help_option('-h', '--help')
 def frontend():
     """Manage LiveKit Voice Assistant Frontend."""
     pass
@@ -1076,6 +1081,7 @@ def frontend_build(force):
 
 # Configuration management group
 @voice_mode_main_cli.group()
+@click.help_option('-h', '--help')
 def config():
     """Manage voice-mode configuration."""
     pass
@@ -1138,6 +1144,7 @@ def config_set(key, value):
 
 # Shell completion group
 @voice_mode_main_cli.group()
+@click.help_option('-h', '--help')
 def completion():
     """Generate shell completion scripts for voice-mode."""
     pass
@@ -1282,6 +1289,7 @@ def completion_install(shell):
 
 # Diagnostics group
 @voice_mode_main_cli.group()
+@click.help_option('-h', '--help')
 def diag():
     """Diagnostic tools for voice-mode."""
     pass

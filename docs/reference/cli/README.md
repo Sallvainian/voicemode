@@ -5,74 +5,113 @@ Voice Mode provides command-line tools for managing services, testing configurat
 ## Available Commands
 
 ### Main Command
-- `voice-mode` - Main Voice Mode CLI interface
+- `voice-mode` - Starts the MCP server (default behavior)
+- `voice-mode --debug` - Start with debug mode enabled
+- `voice-mode --version` - Show version information
+- `voice-mode -h` or `--help` - Show help message
 
 ### Service Management
-- `voice-mode service <service> <action>` - Manage Whisper, Kokoro, and LiveKit services
-  - Services: `whisper`, `kokoro`, `livekit`
-  - Actions: `status`, `start`, `stop`, `restart`, `enable`, `disable`, `logs`
+Each service has its own set of commands:
 
-### Installation Tools
-- `voice-mode install whisper` - Install whisper.cpp for local STT
-- `voice-mode install kokoro` - Install Kokoro for local TTS
-- `voice-mode install livekit` - Install LiveKit server
+**Whisper (STT)**:
+- `voice-mode whisper status|start|stop|restart|enable|disable`
+- `voice-mode whisper logs [-n LINES]`
+- `voice-mode whisper install [OPTIONS]`
+- `voice-mode whisper uninstall [OPTIONS]`
+- `voice-mode whisper models` - List available models
+- `voice-mode whisper model active [MODEL]` - Show/set active model
 
-### Diagnostic Tools
-- `voice-mode check audio` - Check audio device configuration
-- `voice-mode check dependencies` - Verify system dependencies
-- `voice-mode diagnose` - Run full diagnostic suite
+**Kokoro (TTS)**:
+- `voice-mode kokoro status|start|stop|restart|enable|disable`
+- `voice-mode kokoro logs [-n LINES]`
+- `voice-mode kokoro install [OPTIONS]`
+- `voice-mode kokoro uninstall [OPTIONS]`
+
+**LiveKit (RTC)**:
+- `voice-mode livekit status|start|stop|restart|enable|disable`
+- `voice-mode livekit logs [-n LINES]`
+- `voice-mode livekit install [OPTIONS]`
+- `voice-mode livekit uninstall [OPTIONS]`
+- `voice-mode livekit frontend [SUBCOMMAND]`
 
 ### Configuration
-- `voice-mode config show` - Display current configuration
-- `voice-mode config set <key> <value>` - Update configuration value
-- `voice-mode config list` - List all configuration options
+- `voice-mode config list` - List all configuration keys
+- `voice-mode config get <key>` - Get a configuration value
+- `voice-mode config set <key> <value>` - Set a configuration value
 
-### Voice Testing
-- `voice-mode test` - Test voice input/output
-- `voice-mode test stt` - Test speech-to-text only
-- `voice-mode test tts` - Test text-to-speech only
+### Diagnostics
+- `voice-mode diag info` - Show installation information
+- `voice-mode diag devices` - List audio devices
+- `voice-mode diag registry` - Show provider registry
+- `voice-mode diag dependencies` - Check system dependencies
+
+### Voice Conversation
+- `voice-mode converse [OPTIONS]` - Have a voice conversation
+- `voice-mode converse --continuous` - Continuous conversation mode
 
 ## Usage Examples
 
 ### Check Service Status
 ```bash
-voice-mode service whisper status
-voice-mode service kokoro status
-voice-mode service livekit status
+voice-mode whisper status
+voice-mode kokoro status
+voice-mode livekit status
 ```
 
 ### Start Services
 ```bash
-voice-mode service whisper start
-voice-mode service kokoro start
+voice-mode whisper start
+voice-mode kokoro start
+voice-mode livekit start
 ```
 
 ### View Service Logs
 ```bash
-voice-mode service whisper logs
-voice-mode service kokoro logs --lines 100
+voice-mode whisper logs
+voice-mode kokoro logs -n 100
+voice-mode livekit logs --lines 50
 ```
 
 ### Install Local Services
 ```bash
-# Install Whisper with base model
-voice-mode install whisper --model base
+# Install Whisper with specific model
+voice-mode whisper install --model large-v2
 
-# Install Kokoro with default voices
-voice-mode install kokoro
+# Install Kokoro with custom port
+voice-mode kokoro install --port 8880
 
-# Install LiveKit in development mode
-voice-mode install livekit --dev
+# Install LiveKit with auto-enable
+voice-mode livekit install --auto-enable
 ```
 
-### Test Voice Configuration
+### Manage Whisper Models
 ```bash
-# Full voice test
-voice-mode test
+# List all models and their status
+voice-mode whisper models
 
-# Test with specific provider
-voice-mode test --provider openai
-voice-mode test --provider local
+# Set active model
+voice-mode whisper model active small.en
+
+# Install a specific model
+voice-mode whisper model install large-v3
+
+# Remove a model
+voice-mode whisper model remove medium
+```
+
+### Voice Conversation
+```bash
+# Simple conversation
+voice-mode converse
+
+# Continuous conversation mode
+voice-mode converse --continuous
+
+# Speak without waiting for response
+voice-mode converse -m "Hello there!" --no-wait
+
+# Use specific voice
+voice-mode converse --voice nova --tts-provider openai
 ```
 
 ## Environment Variables
@@ -90,6 +129,7 @@ The CLI respects all Voice Mode environment variables. See [Configuration Refere
 
 ## See Also
 
+- [Complete Commands Reference](commands.md) - Full list of all CLI commands
 - [MCP Tools Reference](../mcp/tools.md) - Tools available to AI assistants
 - [Service Management](../../services/README.md) - Detailed service documentation
 - [Configuration Guide](../../user-guide/configuration.md) - User configuration guide
