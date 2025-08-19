@@ -5,75 +5,74 @@ Voice Mode provides command-line tools for managing services, testing configurat
 ## Available Commands
 
 ### Main Command
-- `voicemode` - Main Voice Mode CLI interface
-- `voice-mode` - Alias for voicemode
+- `voice-mode` - Main Voice Mode CLI interface
 
 ### Service Management
-- `voicemode service <service> <action>` - Manage Whisper, Kokoro, and LiveKit services
+- `voice-mode service <service> <action>` - Manage Whisper, Kokoro, and LiveKit services
   - Services: `whisper`, `kokoro`, `livekit`
   - Actions: `status`, `start`, `stop`, `restart`, `enable`, `disable`, `logs`
 
 ### Installation Tools
-- `voicemode install whisper` - Install whisper.cpp for local STT
-- `voicemode install kokoro` - Install Kokoro for local TTS
-- `voicemode install livekit` - Install LiveKit server
+- `voice-mode install whisper` - Install whisper.cpp for local STT
+- `voice-mode install kokoro` - Install Kokoro for local TTS
+- `voice-mode install livekit` - Install LiveKit server
 
 ### Diagnostic Tools
-- `voicemode check audio` - Check audio device configuration
-- `voicemode check dependencies` - Verify system dependencies
-- `voicemode diagnose` - Run full diagnostic suite
+- `voice-mode check audio` - Check audio device configuration
+- `voice-mode check dependencies` - Verify system dependencies
+- `voice-mode diagnose` - Run full diagnostic suite
 
 ### Configuration
-- `voicemode config show` - Display current configuration
-- `voicemode config set <key> <value>` - Update configuration value
-- `voicemode config list` - List all configuration options
+- `voice-mode config show` - Display current configuration
+- `voice-mode config set <key> <value>` - Update configuration value
+- `voice-mode config list` - List all configuration options
 
 ### Voice Testing
-- `voicemode test` - Test voice input/output
-- `voicemode test stt` - Test speech-to-text only
-- `voicemode test tts` - Test text-to-speech only
+- `voice-mode test` - Test voice input/output
+- `voice-mode test stt` - Test speech-to-text only
+- `voice-mode test tts` - Test text-to-speech only
 
 ## Usage Examples
 
 ### Check Service Status
 ```bash
-voicemode service whisper status
-voicemode service kokoro status
-voicemode service livekit status
+voice-mode service whisper status
+voice-mode service kokoro status
+voice-mode service livekit status
 ```
 
 ### Start Services
 ```bash
-voicemode service whisper start
-voicemode service kokoro start
+voice-mode service whisper start
+voice-mode service kokoro start
 ```
 
 ### View Service Logs
 ```bash
-voicemode service whisper logs
-voicemode service kokoro logs --lines 100
+voice-mode service whisper logs
+voice-mode service kokoro logs --lines 100
 ```
 
 ### Install Local Services
 ```bash
 # Install Whisper with base model
-voicemode install whisper --model base
+voice-mode install whisper --model base
 
 # Install Kokoro with default voices
-voicemode install kokoro
+voice-mode install kokoro
 
 # Install LiveKit in development mode
-voicemode install livekit --dev
+voice-mode install livekit --dev
 ```
 
 ### Test Voice Configuration
 ```bash
 # Full voice test
-voicemode test
+voice-mode test
 
 # Test with specific provider
-voicemode test --provider openai
-voicemode test --provider local
+voice-mode test --provider openai
+voice-mode test --provider local
 ```
 
 ## Environment Variables
