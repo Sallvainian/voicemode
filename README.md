@@ -632,8 +632,8 @@ Audio files are saved to: `~/voicemode_audio/` with timestamps in the filename.
 - **[Statistics Dashboard](docs/reference/statistics.md)** - Performance monitoring and metrics
 
 ### Service Guides
-- **[Whisper.cpp Setup](docs/services/whisper-advanced.md)** - Local speech-to-text configuration
-- **[Kokoro Setup](docs/services/kokoro-advanced.md)** - Local text-to-speech configuration
+- **[Whisper.cpp Setup](docs/services/whisper/advanced.md)** - Local speech-to-text configuration
+- **[Kokoro Setup](docs/services/kokoro/advanced.md)** - Local text-to-speech configuration
 - **[Service Health Checks](docs/services/health-checks.md)** - Service readiness and health monitoring
 - **[LiveKit Integration](docs/services/livekit/README.md)** - Real-time voice communication
 
