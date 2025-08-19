@@ -1,11 +1,12 @@
 # Voice Mode Services
 
-Voice Mode uses local services for speech-to-text (STT) and text-to-speech (TTS) functionality, with cloud fallback options.
+Voice Mode uses local services for speech-to-text (STT), text-to-speech (TTS), and real-time transport functionality, with cloud fallback options.
 
 ## Available Services
 
-- **[Kokoro](kokoro.md)**: High-quality local text-to-speech service with multiple voices and languages
-- **[Whisper](whisper.md)**: Fast and accurate local speech-to-text service using OpenAI's Whisper models
+- **[Kokoro](kokoro/)**: High-quality local text-to-speech service with multiple voices and languages
+- **[Whisper](whisper/)**: Fast and accurate local speech-to-text service using OpenAI's Whisper models
+- **[LiveKit](livekit/)**: Real-time audio/video communication server for room-based voice conversations
 
 ## Service Management
 
@@ -18,12 +19,15 @@ Voice Mode provides comprehensive service management through tools, prompts, and
 - [`kokoro_uninstall`](../../voice_mode/tools/services/kokoro/uninstall.py): Clean uninstallation of Kokoro TTS service with optional data removal
 - [`whisper_install`](../../voice_mode/tools/services/whisper/install.py): Automated installation and setup of Whisper STT service
 - [`whisper_uninstall`](../../voice_mode/tools/services/whisper/uninstall.py): Clean uninstallation of Whisper STT service with optional data removal
+- [`livekit_install`](../../voice_mode/tools/services/livekit/install.py): Automated installation and setup of LiveKit server
+- [`livekit_uninstall`](../../voice_mode/tools/services/livekit/uninstall.py): Clean uninstallation of LiveKit server with optional data removal
 - [`download_model`](../../voice_mode/tools/services/whisper/download_model.py): Download and convert Whisper models with Core ML support
 
 ### Prompts
 
 - [`whisper`](../../voice_mode/prompts/services.py): Quick access to Whisper service management commands
 - [`kokoro`](../../voice_mode/prompts/services.py): Quick access to Kokoro service management commands
+- [`livekit`](../../voice_mode/prompts/services.py): Quick access to LiveKit service management commands
 - [`voice-status`](../../voice_mode/prompts/status.py): Check the status of all voice services and providers
 
 ### Resources
@@ -31,10 +35,12 @@ Voice Mode provides comprehensive service management through tools, prompts, and
 #### LaunchD (macOS)
 - [`com.voicemode.kokoro.plist`](../../voice_mode/resources/launchd/com.voicemode.kokoro.plist): macOS service definition for Kokoro auto-start
 - [`com.voicemode.whisper.plist`](../../voice_mode/resources/launchd/com.voicemode.whisper.plist): macOS service definition for Whisper auto-start
+- [`com.voicemode.livekit.plist`](../../voice_mode/resources/launchd/com.voicemode.livekit.plist): macOS service definition for LiveKit auto-start
 
 #### Systemd (Linux)
 - [`voicemode-kokoro.service`](../../voice_mode/resources/systemd/voicemode-kokoro.service): Linux service definition for Kokoro auto-start
 - [`voicemode-whisper.service`](../../voice_mode/resources/systemd/voicemode-whisper.service): Linux service definition for Whisper auto-start
+- [`voicemode-livekit.service`](../../voice_mode/resources/systemd/voicemode-livekit.service): Linux service definition for LiveKit auto-start
 
 #### Version Management
 - [`versions.json`](../../voice_mode/resources/versions.json): Service file version tracking for update management
@@ -44,8 +50,10 @@ Voice Mode provides comprehensive service management through tools, prompts, and
 ### Basic Operations
 - `service("kokoro", "status")` - Check if Kokoro is running
 - `service("whisper", "start")` - Start Whisper service
+- `service("livekit", "status")` - Check if LiveKit is running
 - `service("kokoro", "stop")` - Stop Kokoro service
 - `service("whisper", "restart")` - Restart Whisper service
+- `service("livekit", "logs")` - View LiveKit service logs
 
 ### Boot Management
 - `service("kokoro", "enable")` - Configure Kokoro to start at boot/login
