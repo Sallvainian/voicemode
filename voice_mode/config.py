@@ -248,6 +248,9 @@ def load_voicemode_env():
 # VOICEMODE_MP3_BITRATE=64k
 # VOICEMODE_AAC_BITRATE=64k
 
+# TTS Speed (0.25-4.0, default: 1.0 for normal speed)
+# VOICEMODE_TTS_SPEED=1.0
+
 #############
 # Streaming Configuration
 #############
@@ -598,6 +601,10 @@ if STT_AUDIO_FORMAT not in SUPPORTED_AUDIO_FORMATS:
 OPUS_BITRATE = int(os.getenv("VOICEMODE_OPUS_BITRATE", "32000"))  # Default 32kbps for voice
 MP3_BITRATE = os.getenv("VOICEMODE_MP3_BITRATE", "64k")  # Default 64kbps
 AAC_BITRATE = os.getenv("VOICEMODE_AAC_BITRATE", "64k")  # Default 64kbps
+
+# TTS Speed configuration
+# Default TTS speech speed (0.25-4.0, default: 1.0 for normal speed)
+TTS_SPEED = float(os.getenv("VOICEMODE_TTS_SPEED", "1.0"))
 
 # ==================== STREAMING CONFIGURATION ====================
 

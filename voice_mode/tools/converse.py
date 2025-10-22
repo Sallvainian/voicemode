@@ -54,7 +54,8 @@ from voice_mode.config import (
     INITIAL_SILENCE_GRACE_PERIOD,
     DEFAULT_LISTEN_DURATION,
     TTS_VOICES,
-    TTS_MODELS
+    TTS_MODELS,
+    TTS_SPEED
 )
 import voice_mode.config
 from voice_mode.provider_discovery import provider_registry
@@ -1036,7 +1037,11 @@ consult the MCP resources listed above.
             speed = float(speed)
         except ValueError:
             return f"❌ Error: speed must be a number (got '{speed}')"
-    
+
+    # Use config default if speed not provided
+    if speed is None:
+        speed = TTS_SPEED
+
     # Validate speed parameter range
     if speed is not None:
         if not (0.25 <= speed <= 4.0):
