@@ -3,13 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "voice-mode"
+name = "voice-mode-enhanced"
 dynamic = ["version"]
-description = "VoiceMode - Voice interaction capabilities for AI assistants (formerly voice-mcp)"
+description = "VoiceMode Enhanced - Voice interaction with TTS speed control and enhanced features (fork of voice-mode)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
+    {name = "Sallvainian", email = "sallvainian@gmail.com"},
     {name = "mbailey", email = "mbailey@example.com"},
 ]
 keywords = ["mcp", "voice", "livekit", "speech", "tts", "stt", "ai", "llm"]
@@ -93,9 +94,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mbailey/voicemode"
-Repository = "https://github.com/mbailey/voicemode"
-Issues = "https://github.com/mbailey/voicemode/issues"
+Homepage = "https://github.com/Sallvainian/voicemode"
+Repository = "https://github.com/Sallvainian/voicemode"
+Issues = "https://github.com/Sallvainian/voicemode/issues"
+"Original Project" = "https://github.com/mbailey/voicemode"
 
 [project.scripts]
 voice-mode = "voice_mode.cli:voice_mode"
