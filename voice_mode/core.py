@@ -336,6 +336,7 @@ async def text_to_speech(
             from . import cartesia_tts
             response_content = await cartesia_tts.synthesize(
                 text=text,
+                voice_id=tts_voice,
                 sample_rate=SAMPLE_RATE,
                 speed=speed,
             )
