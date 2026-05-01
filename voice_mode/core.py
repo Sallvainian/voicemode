@@ -221,7 +221,9 @@ async def text_to_speech(
         )
         
         # Determine provider from base URL (simple heuristic)
-        if "openai" in tts_base_url:
+        if "api.cartesia.ai" in tts_base_url:
+            provider = "cartesia"
+        elif "openai" in tts_base_url:
             provider = "openai"
         else:
             provider = "kokoro"
@@ -281,7 +283,12 @@ async def text_to_speech(
         generation_start = time.perf_counter()
         
         # Check if streaming is enabled and format is supported
-        use_streaming = STREAMING_ENABLED and validated_format in ["opus", "mp3", "pcm", "wav"]
+        # Cartesia uses its own non-streaming bytes endpoint for v1
+        use_streaming = (
+            provider != "cartesia"
+            and STREAMING_ENABLED
+            and validated_format in ["opus", "mp3", "pcm", "wav"]
+        )
         
         # Allow streaming with the requested format
         # PCM has lowest latency but highest bandwidth
@@ -325,13 +332,22 @@ async def text_to_speech(
                 # Continue with regular buffered playback
         
         # Original buffered playback
-        # Use context manager to ensure response is properly closed
-        async with openai_clients[client_key].audio.speech.with_streaming_response.create(
-            **request_params
-        ) as response:
-            # Read the entire response content
-            response_content = await response.read()
-            
+        if provider == "cartesia":
+            from . import cartesia_tts
+            response_content = await cartesia_tts.synthesize(
+                text=text,
+                sample_rate=SAMPLE_RATE,
+                speed=speed,
+            )
+            validated_format = "wav"
+        else:
+            # Use context manager to ensure response is properly closed
+            async with openai_clients[client_key].audio.speech.with_streaming_response.create(
+                **request_params
+            ) as response:
+                # Read the entire response content
+                response_content = await response.read()
+
         metrics['generation'] = time.perf_counter() - generation_start
         logger.debug(f"TTS API response received, content length: {len(response_content)} bytes")
         
