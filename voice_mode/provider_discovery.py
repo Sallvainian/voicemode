@@ -111,8 +111,14 @@ class ProviderRegistry:
                     models = ["gpt4o-mini-tts", "tts-1", "tts-1-hd"]
                     voices = ["alloy", "echo", "fable", "nova", "onyx", "shimmer"]
                 elif provider_type == "cartesia":
-                    models = ["sonic-3", "sonic-2"]
-                    voices = [config.CARTESIA_VOICE_ID] if config.CARTESIA_VOICE_ID else []
+                    import re
+                    uuid_re = re.compile(
+                        r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+                    )
+                    models = [config.CARTESIA_MODEL, config.CARTESIA_FALLBACK_MODEL]
+                    voices = [v for v in config.TTS_VOICES if uuid_re.match(v)]
+                    if config.CARTESIA_VOICE_ID and config.CARTESIA_VOICE_ID not in voices:
+                        voices.insert(0, config.CARTESIA_VOICE_ID)
                 else:
                     models = ["tts-1"]
                     voices = ["af_alloy", "af_aoede", "af_bella", "af_heart", "af_jadzia", "af_jessica", "af_kore", "af_nicole", "af_nova", "af_river", "af_sarah", "af_sky", "af_v0", "af_v0bella", "af_v0irulan", "af_v0nicole", "af_v0sarah", "af_v0sky", "am_adam", "am_echo", "am_eric", "am_fenrir", "am_liam", "am_michael", "am_onyx", "am_puck", "am_santa", "am_v0adam", "am_v0gurney", "am_v0michael", "bf_alice", "bf_emma", "bf_lily", "bf_v0emma", "bf_v0isabella", "bm_daniel", "bm_fable", "bm_george", "bm_lewis", "bm_v0george", "bm_v0lewis", "ef_dora", "em_alex", "em_santa", "ff_siwis", "hf_alpha", "hf_beta", "hm_omega", "hm_psi", "if_sara", "im_nicola", "jf_alpha", "jf_gongitsune", "jf_nezumi", "jf_tebukuro", "jm_kumo", "pf_dora", "pm_alex", "pm_santa", "zf_xiaobei", "zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi", "zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang"]
@@ -163,13 +169,21 @@ class ProviderRegistry:
         start_time = time.time()
 
         # Cartesia is not OpenAI-compatible; skip /v1/models probing and
-        # populate from config directly.
+        # populate from config directly. Treat any UUID-shaped entry in
+        # VOICEMODE_VOICES as a Cartesia voice id so voice switching works
+        # without re-registering the endpoint.
         if detect_provider_type(base_url) == "cartesia":
-            voice_id = config.CARTESIA_VOICE_ID
+            import re
+            uuid_re = re.compile(
+                r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            )
+            voices = [v for v in config.TTS_VOICES if uuid_re.match(v)]
+            if config.CARTESIA_VOICE_ID and config.CARTESIA_VOICE_ID not in voices:
+                voices.insert(0, config.CARTESIA_VOICE_ID)
             self.registry[service_type][base_url] = EndpointInfo(
                 base_url=base_url,
                 models=[config.CARTESIA_MODEL, config.CARTESIA_FALLBACK_MODEL],
-                voices=[voice_id] if voice_id else [],
+                voices=voices,
                 provider_type="cartesia",
                 last_check=datetime.now(timezone.utc).isoformat(),
                 last_error=None if config.CARTESIA_API_KEY else "CARTESIA_API_KEY not set",
