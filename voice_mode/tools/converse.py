@@ -1599,7 +1599,10 @@ consult the MCP resources listed above.
                     logger.info(f"Speak-only result: {result}")
                     return result
 
-                # Play "listening" feedback sound (chime duration acts as natural pause)
+                # Brief pause before listening
+                await asyncio.sleep(0.5)
+
+                # Play "listening" feedback sound
                 await play_audio_feedback(
                     "listening",
                     openai_clients,
@@ -1608,7 +1611,7 @@ consult the MCP resources listed above.
                     chime_leading_silence=chime_leading_silence,
                     chime_trailing_silence=chime_trailing_silence
                 )
-                
+
                 # Record response
                 logger.info(f"🎤 Listening for {listen_duration_max} seconds...")
 
