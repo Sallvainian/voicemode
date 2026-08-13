@@ -558,6 +558,7 @@ def service_health(service_name):
         display_name = 'Kokoro'
     else:
         click.echo(f"❌ Unknown service: {service_name}")
+        sys.exit(1)
         return
 
     import subprocess
@@ -635,6 +636,7 @@ def service_install(service_name, force):
             else:
                 click.echo(f"❌ Whisper installation failed: {result.get('error', 'Unknown error')}")
                 _echo_missing_dependencies(result)
+                sys.exit(1)
         else:
             click.echo(result)
     elif service_name == 'kokoro':
@@ -648,6 +650,7 @@ def service_install(service_name, force):
             else:
                 click.echo(f"❌ Kokoro installation failed: {result.get('error', 'Unknown error')}")
                 _echo_missing_dependencies(result)
+                sys.exit(1)
         else:
             click.echo(result)
     elif service_name == 'voicemode':
@@ -660,6 +663,7 @@ def service_install(service_name, force):
         else:
             click.echo(f"❌ VoiceMode installation failed: {result.get('error', 'Unknown error')}")
             _echo_missing_dependencies(result)
+            sys.exit(1)
     elif service_name == 'mlx-audio':
         from voice_mode.tools.mlx_audio.install import mlx_audio_install
         result = asyncio.run(mlx_audio_install(force_reinstall=force))
@@ -679,10 +683,12 @@ def service_install(service_name, force):
             else:
                 click.echo(f"❌ mlx-audio installation failed: {result.get('error', 'Unknown error')}")
                 _echo_missing_dependencies(result)
+                sys.exit(1)
         else:
             click.echo(result)
     else:
         click.echo(f"❌ Unknown service: {service_name}")
+        sys.exit(1)
 
 
 # ============================================================================

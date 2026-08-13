@@ -29,6 +29,21 @@ dependency step failed and took the rest of the run with it.
 
 ### Fixed
 
+#### `voicemode service install` reported success after failing
+
+`voicemode service install whisper` printed its error and then exited **0**.
+The installer runs it with `subprocess.run(..., check=True)`, so nothing raised
+and it printed `✅ Whisper STT service installed` directly beneath
+`❌ Whisper installation failed` — leaving users believing a service was
+installed when it was not. The failure branches now exit non-zero.
+
+#### Install suggestions no longer point at dnf on Fedora Atomic
+
+The Whisper installer suggested `sudo dnf install cuda-toolkit` (and
+`apt-get install build-essential`) on any Linux. On Atomic that command always
+fails. It now suggests `--no-gpu` or a distrobox container for CUDA, and
+Homebrew or `rpm-ostree` for build tools.
+
 #### Dependency *installation* on Fedora Atomic and on Fedora + Homebrew
 
 `voicemode service install whisper` fed Homebrew the Fedora RPM names straight

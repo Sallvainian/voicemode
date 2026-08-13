@@ -520,21 +520,46 @@ async def whisper_install(
                     missing_deps.append("cmake (run: brew install cmake)")
         
         elif is_linux:
+            from voice_mode.utils.dependencies.package_managers import is_ostree_system
+
+            # Fedora Atomic (Silverblue, Bazzite, Bluefin) reports ID=fedora and
+            # ships dnf, but `dnf install` cannot work there -- suggesting it
+            # sends the user down a path that always fails.
+            on_ostree = is_ostree_system()
+
             # Check for build essentials
             if not shutil.which("gcc") or not shutil.which("make"):
-                missing_deps.append("build-essential (run: sudo apt-get install build-essential)")
-            
+                if on_ostree:
+                    missing_deps.append(
+                        "gcc/make (run: brew install gcc make, "
+                        "or sudo rpm-ostree install gcc make && systemctl reboot)"
+                    )
+                elif shutil.which("apt-get"):
+                    missing_deps.append("build-essential (run: sudo apt-get install build-essential)")
+                else:
+                    missing_deps.append("gcc/make (install your distribution's build tools)")
+
             if use_gpu and not shutil.which("nvcc"):
                 # Suggest distro-appropriate install command, or --no-gpu as alternative
-                if shutil.which("apt-get"):
-                    cuda_install = "sudo apt-get install nvidia-cuda-toolkit"
-                elif shutil.which("dnf"):
-                    cuda_install = "sudo dnf install cuda-toolkit"
+                if on_ostree:
+                    # No Homebrew formula for the CUDA toolkit, and layering it is
+                    # heavy, so lead with the option that needs neither.
+                    cuda_install = (
+                        "use --no-gpu for CPU-only, or run the build inside a "
+                        "distrobox container where dnf works: "
+                        "distrobox create --name cuda --image fedora:latest"
+                    )
+                    missing_deps.append(f"CUDA toolkit ({cuda_install})")
                 else:
-                    cuda_install = "your distribution's CUDA toolkit package"
-                missing_deps.append(
-                    f"CUDA toolkit (run: {cuda_install}, or use --no-gpu for CPU-only)"
-                )
+                    if shutil.which("apt-get"):
+                        cuda_install = "sudo apt-get install nvidia-cuda-toolkit"
+                    elif shutil.which("dnf"):
+                        cuda_install = "sudo dnf install cuda-toolkit"
+                    else:
+                        cuda_install = "your distribution's CUDA toolkit package"
+                    missing_deps.append(
+                        f"CUDA toolkit (run: {cuda_install}, or use --no-gpu for CPU-only)"
+                    )
         
         if missing_deps:
             return {
