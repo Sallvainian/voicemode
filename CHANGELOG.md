@@ -29,6 +29,17 @@ dependency step failed and took the rest of the run with it.
 
 ### Fixed
 
+#### Package-manager selection tests no longer depend on the host they run on
+
+`TestPackageManagerSelection` mocked the managers' availability but not the OS
+probes, so it asserted against whatever machine ran it: on macOS the Darwin
+branch returns first, and on a Fedora Atomic host the ostree branch does, so
+`test_get_package_manager_dnf` failed for any Silverblue/Bazzite contributor
+while passing in CI. Both probes are now pinned, and the Atomic branches have
+coverage of their own — including that `DnfManager` is never selected there even
+with `dnf` on PATH, and that RPM→Homebrew translation strips `-devel` and
+collapses `cargo`/`rust` onto the single `rust` formula.
+
 #### Failed installs report the real error instead of crashing the error handler
 
 `whisper_install`'s `except subprocess.CalledProcessError` handler called
