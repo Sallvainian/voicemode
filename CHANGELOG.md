@@ -29,6 +29,22 @@ dependency step failed and took the rest of the run with it.
 
 ### Fixed
 
+#### Large dependency installs are no longer killed partway through
+
+Homebrew had the shortest install timeout of the three package managers (300s,
+against 600s for apt and dnf) despite doing the heaviest work -- it downloads
+large bottles and can build from source. Installing `rust` for Kokoro is a
+~400MB bottle that exceeded 300s on an ordinary connection, so the install was
+killed midway and reported a bare timeout. Raised to 1800s.
+
+#### `voicemode service install whisper` gained `--model` and `--no-gpu`
+
+`whisper_install()` has always accepted `model` and `use_gpu`, but the command
+passed neither. Two consequences: the CUDA error told users to "use --no-gpu"
+when no such flag existed, leaving no way to build CPU-only; and the standalone
+installer's `service install whisper --model <name>` was an unknown option,
+which would have failed for anyone choosing a non-default model.
+
 #### `voicemode service install` reported success after failing
 
 `voicemode service install whisper` printed its error and then exited **0**.

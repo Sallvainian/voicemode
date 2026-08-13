@@ -607,8 +607,12 @@ def _echo_missing_dependencies(result):
 @service.command('install')
 @click.argument('service_name', type=click.Choice(VALID_SERVICES, case_sensitive=False), metavar='SERVICE')
 @click.option('--force', '-f', is_flag=True, help='Force reinstall even if already installed')
+@click.option('--model', default=None, help='Whisper model to download (whisper only)')
+@click.option('--use-gpu/--no-gpu', default=None,
+              help='Enable or disable GPU support (whisper only). --no-gpu builds CPU-only '
+                   'and needs no CUDA toolkit.')
 @click.help_option('-h', '--help')
-def service_install(service_name, force):
+def service_install(service_name, force, model, use_gpu):
     """Install a voice service.
 
     \b
@@ -626,7 +630,16 @@ def service_install(service_name, force):
     """
     if service_name == 'whisper':
         from voice_mode.tools.whisper.install import whisper_install
-        result = asyncio.run(getattr(whisper_install, 'fn', whisper_install)(force_reinstall=force))
+        # whisper_install accepts model and use_gpu, but this command previously
+        # passed neither -- so --no-gpu, which the CUDA error message tells the
+        # user to run, did not exist, and the standalone installer's
+        # `service install whisper --model X` was an unknown option.
+        kwargs = {'force_reinstall': force}
+        if model is not None:
+            kwargs['model'] = model
+        if use_gpu is not None:
+            kwargs['use_gpu'] = use_gpu
+        result = asyncio.run(getattr(whisper_install, 'fn', whisper_install)(**kwargs))
         # Handle dict result from tool
         if isinstance(result, dict):
             if result.get("success"):

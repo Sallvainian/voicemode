@@ -31,6 +31,13 @@ RPM_TO_BREW = {
 }
 
 
+# Homebrew had the shortest install timeout (300s) despite doing the heaviest
+# work -- it downloads large bottles and falls back to building from source.
+# The rust bottle alone is ~400MB, which exceeded 300s on an ordinary
+# connection and killed the install partway through with no useful error.
+BREW_INSTALL_TIMEOUT = 1800
+
+
 def is_ostree_system() -> bool:
     """Detect an rpm-ostree / Fedora Atomic system (Silverblue, Bazzite, Bluefin).
 
@@ -117,10 +124,10 @@ class BrewManager(PackageManager):
         cmd = ["brew", "install"] + package_names
         try:
             if verbose:
-                result = subprocess.run(cmd, text=True, timeout=300)
+                result = subprocess.run(cmd, text=True, timeout=BREW_INSTALL_TIMEOUT)
                 return result.returncode == 0, ""
             else:
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=BREW_INSTALL_TIMEOUT)
                 return result.returncode == 0, result.stderr or result.stdout
         except (subprocess.SubprocessError, OSError) as e:
             return False, str(e)
