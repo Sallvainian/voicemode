@@ -37,7 +37,11 @@ class PackageInstaller:
 
         package_names = [pkg.name for pkg in packages]
 
-        if self.dry_run:
+        # On Atomic the interesting part of a dry run is *how* each package
+        # would be obtained -- brew, rpm-ostree, or skipped entirely -- so let
+        # _install_ostree report that itself rather than printing a flat list
+        # that hides the routing.
+        if self.dry_run and not self.platform.is_ostree:
             print(f"[DRY RUN] Would install: {', '.join(package_names)}")
             return True
 
@@ -142,8 +146,11 @@ class PackageInstaller:
         ok = True
         if brew_pkgs:
             if get_homebrew_prefix():
-                print(f"Detected Fedora Atomic -- installing via Homebrew: {', '.join(brew_pkgs)}")
-                ok = self._install_homebrew(brew_pkgs)
+                if self.dry_run:
+                    print(f"[DRY RUN] Would run: brew install {' '.join(brew_pkgs)}")
+                else:
+                    print(f"Detected Fedora Atomic -- installing via Homebrew: {', '.join(brew_pkgs)}")
+                    ok = self._install_homebrew(brew_pkgs)
             else:
                 unmapped.extend(remaining)
                 print(

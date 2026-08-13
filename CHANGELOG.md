@@ -29,6 +29,23 @@ dependency step failed and took the rest of the run with it.
 
 ### Fixed
 
+#### Dependency *installation* on Fedora Atomic and on Fedora + Homebrew
+
+`voicemode service install whisper` fed Homebrew the Fedora RPM names straight
+from `dependencies.yaml`, so it failed with *"No available formula with the
+name portaudio-devel"*. `cargo` was worse — it has no formula at all, because
+cargo ships inside `rust`.
+
+- RPM names are now translated to homebrew-core formulae before install, and
+  de-duplicated (`cargo` + `rust` collapse to a single `rust`). Names with no
+  formula report the `rpm-ostree install` and `distrobox` alternatives instead
+  of a bare brew error.
+- **`get_package_manager()` tried Homebrew first on every platform.** Any
+  Fedora user with Homebrew installed — Atomic or not — got brew selected and
+  handed RPM names it could not resolve. The native manager is now preferred on
+  Linux, with Homebrew as the fallback, and Atomic systems route to Homebrew
+  deliberately rather than by accident.
+
 #### Dependency checks no longer report false negatives
 
 Applies to both dependency paths — the `voicemode deps` CLI

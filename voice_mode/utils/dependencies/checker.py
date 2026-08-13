@@ -11,7 +11,7 @@ import time
 from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 
-from .package_managers import get_package_manager
+from .package_managers import get_package_manager, get_homebrew_prefix, is_ostree_system
 from .cache import get_cache
 
 logger = logging.getLogger(__name__)
@@ -47,36 +47,6 @@ def load_dependencies() -> dict:
                 with yaml_file.open() as f:
                     return yaml.safe_load(f)
             raise FileNotFoundError("Could not find dependencies.yaml")
-
-
-def is_ostree_system() -> bool:
-    """Detect an rpm-ostree / Fedora Atomic system (Silverblue, Bazzite, Bluefin).
-
-    These have /etc/fedora-release but a read-only /usr and no working
-    ``dnf install``, so dependencies are normally satisfied with Homebrew or
-    layered with ``rpm-ostree``.
-    """
-    return os.path.exists("/run/ostree-booted") or os.path.isdir("/sysroot/ostree")
-
-
-def get_homebrew_prefix() -> Optional[str]:
-    """Return the Homebrew prefix if present, else None."""
-    import shutil as _shutil
-
-    brew = _shutil.which("brew")
-    if brew:
-        try:
-            result = subprocess.run(
-                [brew, "--prefix"], capture_output=True, text=True, timeout=10
-            )
-            if result.returncode == 0:
-                return result.stdout.strip()
-        except (subprocess.SubprocessError, OSError):
-            pass
-    for candidate in ("/home/linuxbrew/.linuxbrew", os.path.expanduser("~/.linuxbrew")):
-        if os.path.exists(os.path.join(candidate, "bin", "brew")):
-            return candidate
-    return None
 
 
 def _check_env() -> dict:
