@@ -1,6 +1,7 @@
 """Installation tool for whisper.cpp"""
 
 import os
+import re
 import sys
 import platform
 import subprocess
@@ -8,7 +9,7 @@ import shutil
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Tuple, Union
 import asyncio
 try:
     from importlib.resources import files
@@ -27,6 +28,79 @@ from voice_mode.utils.migration_helpers import auto_migrate_if_needed
 from voice_mode.utils.gpu_detection import detect_gpu
 
 logger = logging.getLogger("voicemode")
+
+
+def _nvcc_max_gcc_major() -> Optional[int]:
+    """Highest GCC major version the installed nvcc will accept, if knowable.
+
+    CUDA records its ceiling in crt/host_config.h rather than exposing it via a
+    flag, so read that instead of hardcoding a table that goes stale with every
+    CUDA release.
+    """
+    nvcc = shutil.which("nvcc")
+    if not nvcc:
+        return None
+    header = Path(nvcc).resolve().parent.parent / "include" / "crt" / "host_config.h"
+    try:
+        text = header.read_text(errors="ignore")
+    except OSError:
+        return None
+    match = re.search(r"gcc versions later than (\d+)", text)
+    return int(match.group(1)) if match else None
+
+
+def _gxx_major(compiler: str) -> Optional[int]:
+    """Major version of a g++ binary, or None if it cannot be determined."""
+    try:
+        result = subprocess.run(
+            [compiler, "-dumpversion"], capture_output=True, text=True, timeout=10
+        )
+    except (subprocess.SubprocessError, OSError):
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        return int(result.stdout.strip().split(".")[0])
+    except (ValueError, IndexError):
+        return None
+
+
+def cuda_host_compiler_override() -> Tuple[Optional[str], Optional[str]]:
+    """Pick a C++ compiler that nvcc will accept for the CUDA build.
+
+    Distributions routinely ship a GCC newer than the current CUDA release
+    supports -- Fedora 44 defaults to GCC 16 while CUDA 13.3 stops at 15 -- and
+    nvcc then aborts with "unsupported GNU version", so ``-DGGML_CUDA=ON`` fails
+    at configure time on an otherwise correct setup.
+
+    Returns ``(compiler, problem)``. ``compiler`` is a path to hand to CMake, or
+    None when the default is already supported. ``problem`` is a warning for the
+    case where the default is too new and nothing compatible is installed.
+    """
+    ceiling = _nvcc_max_gcc_major()
+    if ceiling is None:
+        return None, None
+
+    default = shutil.which("g++") or shutil.which("c++")
+    default_major = _gxx_major(default) if default else None
+    if default_major is not None and default_major <= ceiling:
+        return None, None
+
+    # Fedora's compat packages install as g++-14, Homebrew's gcc@15 as g++-15,
+    # Debian's as g++-13. Walk down from the ceiling so the newest usable
+    # compiler wins.
+    for major in range(ceiling, 7, -1):
+        for name in (f"g++-{major}", f"g++{major}"):
+            found = shutil.which(name)
+            if found and _gxx_major(found) == major:
+                return found, None
+
+    return None, (
+        f"The default C++ compiler is GCC {default_major}, but nvcc supports at "
+        f"most GCC {ceiling}. Install a compatible compiler (e.g. "
+        f"`brew install gcc@{ceiling}` or `sudo dnf install gcc{ceiling}-c++`) "
+        f"and reinstall, or use --no-gpu to build CPU-only."
+    )
 
 
 async def update_whisper_service_files(
@@ -564,12 +638,21 @@ async def whisper_install(
             if use_gpu and not shutil.which("nvcc"):
                 # Suggest distro-appropriate install command, or --no-gpu as alternative
                 if on_ostree:
-                    # No Homebrew formula for the CUDA toolkit, and layering it is
-                    # heavy, so lead with the option that needs neither.
+                    # Layering the toolkit is unreliable (rpm-ostree struggles
+                    # with packages this large) and a container would leave the
+                    # binary linked against libraries the host does not have.
+                    # NVIDIA's runfile is the way in: /usr/local is a symlink to
+                    # /var/usrlocal, so it is writable and survives image
+                    # updates without layering anything.
                     cuda_install = (
-                        "use --no-gpu for CPU-only, or run the build inside a "
-                        "distrobox container where dnf works: "
-                        "distrobox create --name cuda --image fedora:latest"
+                        "download NVIDIA's runfile from "
+                        "https://developer.nvidia.com/cuda-downloads and install "
+                        "the toolkit only -- /usr/local is a symlink to "
+                        "/var/usrlocal, so it is writable and persists across "
+                        "image updates: "
+                        "sudo sh cuda_<version>_linux.run --silent --toolkit --override. "
+                        "Then add /usr/local/cuda/bin to PATH. "
+                        "Or use --no-gpu for CPU-only"
                     )
                     missing_deps.append(f"CUDA toolkit ({cuda_install})")
                 else:
@@ -651,6 +734,18 @@ async def whisper_install(
                 logger.info("Enabling Core ML support with fallback for Apple Silicon")
         elif is_linux and use_gpu:
             cmake_flags.append("-DGGML_CUDA=ON")
+            host_cxx, host_cxx_problem = cuda_host_compiler_override()
+            if host_cxx:
+                # CMake uses CMAKE_CUDA_HOST_COMPILER for its own compile tests;
+                # NVCC_CCBIN covers nvcc invocations ggml makes outside CMake's
+                # CUDA language support. Set both so they cannot disagree.
+                logger.info(f"Using {host_cxx} as the CUDA host compiler")
+                cmake_flags.append(f"-DCMAKE_CUDA_HOST_COMPILER={host_cxx}")
+                build_env["CUDAHOSTCXX"] = host_cxx
+                build_env["NVCC_CCBIN"] = host_cxx
+            elif host_cxx_problem:
+                logger.warning(host_cxx_problem)
+                print(f"⚠️  {host_cxx_problem}")
         
         # Get number of CPU cores for parallel build
         cpu_count = os.cpu_count() or 4

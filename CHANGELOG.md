@@ -29,6 +29,34 @@ dependency step failed and took the rest of the run with it.
 
 ### Fixed
 
+#### CUDA builds no longer fail when the distribution's GCC outpaces nvcc
+
+`-DGGML_CUDA=ON` was passed with an unmodified environment, leaving nvcc to use
+whatever `g++` the distribution defaults to. nvcc rejects a host compiler newer
+than the version its headers were built against, so on any distribution that
+moves faster than CUDA the build aborted at configure time with `#error --
+unsupported GNU version!` — Fedora 44 defaults to GCC 16 while CUDA 13.3 stops
+at 15, and Arch and Fedora Rawhide hit the same wall.
+
+The supported ceiling is now read from CUDA's own `crt/host_config.h` rather
+than hardcoded, and the newest installed compiler at or below it (`g++-15`,
+`g++-14`, …, from Homebrew, Fedora's `gccN-c++` compat packages, or Debian's
+versioned packages) is passed as `CMAKE_CUDA_HOST_COMPILER`, with `CUDAHOSTCXX`
+and `NVCC_CCBIN` set to match so CMake and ggml's own nvcc calls cannot
+disagree. When the default is too new and nothing compatible is installed, the
+build now says so and names the package to install instead of failing with a
+wall of preprocessor output.
+
+#### CUDA guidance on Atomic systems pointed at a container that cannot help
+
+Atomic users missing the toolkit were told to build inside a distrobox
+container. A whisper binary built there links against the container's CUDA
+libraries, but voice-mode runs whisper as a host service, so the suggestion
+produced a binary the host could not run. The guidance now points at NVIDIA's
+runfile with `--toolkit --override`: `/usr/local` is a symlink to
+`/var/usrlocal` on these systems, so it is writable and persists across image
+updates, giving a host-native toolkit without layering or a reboot.
+
 #### Large dependency installs are no longer killed partway through
 
 Homebrew had the shortest install timeout of the three package managers (300s,
