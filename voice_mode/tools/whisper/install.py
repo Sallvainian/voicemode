@@ -477,7 +477,11 @@ async def whisper_install(
                 "error": f"Unsupported operating system: {system}"
             }
         
-        # Auto-detect GPU if not specified
+        # Auto-detect GPU if not specified. Track whether this was a choice the
+        # user made explicitly: an auto-detected GPU should degrade to a CPU
+        # build when the CUDA toolkit is missing, but an explicit --use-gpu
+        # should still be an error rather than silently ignored.
+        gpu_auto_detected = use_gpu is None
         if use_gpu is None:
             use_gpu, gpu_type = detect_gpu()
             logger.info(f"Auto-detected GPU: {gpu_type} (enabled: {use_gpu})")
@@ -538,6 +542,24 @@ async def whisper_install(
                     missing_deps.append("build-essential (run: sudo apt-get install build-essential)")
                 else:
                     missing_deps.append("gcc/make (install your distribution's build tools)")
+
+            if use_gpu and not shutil.which("nvcc") and gpu_auto_detected:
+                # The GPU was auto-detected, not asked for. A missing CUDA
+                # toolkit is not a reason to refuse to install -- whisper.cpp
+                # builds and runs fine on CPU. Failing here strands anyone with
+                # an NVIDIA card and no toolkit, and on Fedora Atomic the
+                # toolkit cannot be installed at all.
+                logger.warning(
+                    "GPU detected but the CUDA toolkit (nvcc) is not installed -- "
+                    "building CPU-only. Install the CUDA toolkit and reinstall with "
+                    "--use-gpu for GPU acceleration."
+                )
+                print(
+                    "⚠️  GPU detected but CUDA toolkit (nvcc) not found - building CPU-only.\n"
+                    "   Reinstall with --use-gpu after installing the CUDA toolkit to enable it."
+                )
+                use_gpu = False
+                gpu_type = "cpu"
 
             if use_gpu and not shutil.which("nvcc"):
                 # Suggest distro-appropriate install command, or --no-gpu as alternative

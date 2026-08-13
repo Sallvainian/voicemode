@@ -53,6 +53,18 @@ and it printed `✅ Whisper STT service installed` directly beneath
 `❌ Whisper installation failed` — leaving users believing a service was
 installed when it was not. The failure branches now exit non-zero.
 
+#### An auto-detected GPU no longer blocks the Whisper install
+
+`whisper_install()` auto-detects the GPU, then required `nvcc` and refused to
+install without it. Anyone with an NVIDIA card but no CUDA toolkit was blocked
+from installing Whisper at all -- even though whisper.cpp builds and runs fine
+on CPU, and even though nothing had asked for GPU support. On Fedora Atomic
+this was a dead end, since the CUDA toolkit cannot be installed there.
+
+When the GPU was auto-detected, a missing toolkit now warns and falls back to a
+CPU-only build. An explicit `--use-gpu` still errors, so a deliberate request is
+never silently downgraded.
+
 #### Install suggestions no longer point at dnf on Fedora Atomic
 
 The Whisper installer suggested `sudo dnf install cuda-toolkit` (and
