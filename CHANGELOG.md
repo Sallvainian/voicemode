@@ -31,15 +31,24 @@ dependency step failed and took the rest of the run with it.
 
 #### Dependency checks no longer report false negatives
 
+Applies to both dependency paths — the `voicemode deps` CLI
+(`voice_mode/utils/dependencies/`) and the standalone installer
+(`installer/voicemode_install/`), which carry separate copies of
+`dependencies.yaml`.
+
 Several checks asked `rpm -q` whether a package was installed, which reports
 missing whenever the dependency was satisfied by anything other than an RPM —
-Homebrew, Nix, or a bundled toolchain. Checks now test for the capability
+Homebrew, Nix, or a bundled toolchain. On Bazzite this reported 7 of 7 core
+dependencies missing on a working install. Checks now test for the capability
 rather than the packaging:
 
 - `alsa-lib-devel` → `pkg-config --exists alsa` (the check the whisper section
   already used).
-- `python3-devel` → probes for `Python.h` under `sysconfig`, so uv-managed
-  interpreters count.
+- `python3-devel` → probes for `Python.h` under `sysconfig`, using the
+  interpreter that would actually build the extensions (exported as
+  `VOICEMODE_PYTHON`) rather than whatever `python3` resolves to on `PATH`.
+  Under `uv tool install` those differ: uv's managed CPython ships headers
+  while the system `python3` often has none.
 - `portaudio` → probes for a loadable `libportaudio`, since `sounddevice`
   dlopens it through cffi rather than linking at build time.
 - `portaudio-devel` → `pkg-config --exists portaudio-2.0`.

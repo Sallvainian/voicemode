@@ -49,6 +49,66 @@ def load_dependencies() -> dict:
             raise FileNotFoundError("Could not find dependencies.yaml")
 
 
+def is_ostree_system() -> bool:
+    """Detect an rpm-ostree / Fedora Atomic system (Silverblue, Bazzite, Bluefin).
+
+    These have /etc/fedora-release but a read-only /usr and no working
+    ``dnf install``, so dependencies are normally satisfied with Homebrew or
+    layered with ``rpm-ostree``.
+    """
+    return os.path.exists("/run/ostree-booted") or os.path.isdir("/sysroot/ostree")
+
+
+def get_homebrew_prefix() -> Optional[str]:
+    """Return the Homebrew prefix if present, else None."""
+    import shutil as _shutil
+
+    brew = _shutil.which("brew")
+    if brew:
+        try:
+            result = subprocess.run(
+                [brew, "--prefix"], capture_output=True, text=True, timeout=10
+            )
+            if result.returncode == 0:
+                return result.stdout.strip()
+        except (subprocess.SubprocessError, OSError):
+            pass
+    for candidate in ("/home/linuxbrew/.linuxbrew", os.path.expanduser("~/.linuxbrew")):
+        if os.path.exists(os.path.join(candidate, "bin", "brew")):
+            return candidate
+    return None
+
+
+def _check_env() -> dict:
+    """Environment for check commands, with Homebrew's pkgconfig dirs added.
+
+    Homebrew is not on pkg-config's default search path on Linux, so headers
+    installed with ``brew install alsa-lib`` are invisible to a bare
+    ``pkg-config --exists alsa`` even though the compiler finds them. On an
+    immutable OS Homebrew is often the only way to get headers, so without this
+    every pkg-config check is a false negative.
+    """
+    env = os.environ.copy()
+    prefix = get_homebrew_prefix()
+    if prefix:
+        parts = [
+            os.path.join(prefix, "lib", "pkgconfig"),
+            os.path.join(prefix, "share", "pkgconfig"),
+        ]
+        existing = env.get("PKG_CONFIG_PATH", "")
+        if existing:
+            parts.append(existing)
+        env["PKG_CONFIG_PATH"] = ":".join(parts)
+
+    # The interpreter that would actually build C extensions for voice-mode --
+    # not whatever `python3` resolves to on PATH. Under `uv tool install` these
+    # differ: uv's managed CPython ships its own headers while the system
+    # python3 may have none, so probing PATH's python3 reports a false missing
+    # python3-devel.
+    env["VOICEMODE_PYTHON"] = sys.executable
+    return env
+
+
 def detect_platform() -> str:
     """Detect OS/distribution.
 
@@ -107,12 +167,17 @@ def check_dependency(package: dict, platform_key: str) -> bool:
     # Use check_command if provided
     if "check_command" in package:
         try:
-            cmd = package["check_command"].split()
+            # shell=True (matching the standalone installer's checker) so a
+            # check can use quoting or a fallback such as `a --version || b
+            # --version`. The previous .split() broke both. Commands come from
+            # the bundled dependencies.yaml, not from user input.
             result = subprocess.run(
-                cmd,
+                package["check_command"],
+                shell=True,
                 capture_output=True,
                 timeout=5,
-                text=True
+                text=True,
+                env=_check_env()
             )
             installed = result.returncode == 0
             logger.debug(f"Check command for {package_name}: {installed}")

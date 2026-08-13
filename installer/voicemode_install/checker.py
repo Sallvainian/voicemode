@@ -8,6 +8,7 @@ from typing import List, Optional
 import yaml
 
 import os
+import sys
 
 from .system import PlatformInfo, check_command_exists, get_homebrew_prefix
 
@@ -155,6 +156,12 @@ class DependencyChecker:
             existing = env.get('PKG_CONFIG_PATH', '')
             brew_pc = [str(prefix / 'lib' / 'pkgconfig'), str(prefix / 'share' / 'pkgconfig')]
             env['PKG_CONFIG_PATH'] = ':'.join([p for p in brew_pc + [existing] if p])
+
+        # The interpreter that would actually build C extensions -- not whatever
+        # `python3` resolves to on PATH. uv's managed CPython ships its own
+        # headers while the system python3 may have none, so probing PATH's
+        # python3 reports a false missing python3-devel.
+        env['VOICEMODE_PYTHON'] = sys.executable
         return env
 
     def _run_check_command(self, command: str) -> bool:
