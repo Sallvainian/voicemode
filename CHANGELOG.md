@@ -29,6 +29,54 @@ dependency step failed and took the rest of the run with it.
 
 ### Fixed
 
+#### Failed installs report the real error instead of crashing the error handler
+
+`whisper_install`'s `except subprocess.CalledProcessError` handler called
+`e.stderr.decode()`, but the configure and build steps run with `text=True`, so
+`e.stderr` is already `str`. The handler therefore raised `AttributeError`
+itself. A sibling `except Exception` cannot catch an exception raised by a
+preceding handler, so it escaped the function entirely and destroyed the cmake
+output at the one moment it was needed — a failed GPU build printed a wall of
+linker noise followed by an unrelated `'str' object has no attribute 'decode'`.
+
+The same line exists verbatim in the Kokoro installer, where it does not crash
+today only because none of its checked calls capture output — so the handler
+silently reports `"stderr": None` for every failure, and would start crashing
+the moment anyone added `capture_output=True`. Both now decode only when handed
+bytes.
+
+Two more handlers that could raise over the top of the error they were meant to
+report:
+
+- `disable_sounddevice_stderr_redirect()` imported `sys` *inside* its `try`,
+  making it a function-local name. When the `sounddevice` import failed — the
+  exact case the handler exists for — `sys` was unbound and the handler raised
+  `UnboundLocalError` instead of logging and continuing. The imports the handler
+  depends on are now bound before the `try`.
+- `Exchange` tailing called `process.terminate()` from its `KeyboardInterrupt`
+  handler; a Ctrl-C during `Popen()` itself left `process` unbound. It is now
+  bound to `None` first and the handler guards on it.
+
+#### The installer no longer reports success after a component fails
+
+A run where Whisper failed and Kokoro succeeded logged
+`"Failed to install whisper packages"` and then, four lines later,
+`"Installation completed" {"success": true}` — and exited 0, so anything
+scripted around `voice-mode-install` saw a clean run. `log_complete` was called
+with the literal `True`; no component result could influence it. Optional
+services are still allowed to fail without aborting the run, but the failures
+are now collected, the final status reflects them, the summary names them with
+the command to retry each, and the process exits 1.
+
+The log also recorded only a success boolean, discarding the exception that was
+live in scope, which is what forced diagnosis back into terminal scrollback.
+`log_install` now accepts the error text and `log_complete` records which
+components failed.
+
+Removed the unreachable `else` branches that reported "may not have completed
+successfully" — those `subprocess.run` calls pass `check=True`, so they can only
+return when the command succeeded.
+
 #### CUDA builds no longer fail when the distribution's GCC outpaces nvcc
 
 `-DGGML_CUDA=ON` was passed with an unmodified environment, leaving nvcc to use

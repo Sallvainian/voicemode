@@ -934,7 +934,15 @@ async def whisper_install(
         return {
             "success": False,
             "error": f"Command failed: {e.cmd}",
-            "stderr": e.stderr.decode() if e.stderr else None
+            # The build and configure steps run with text=True, so e.stderr is
+            # already str -- .decode() raised AttributeError *inside* this
+            # handler, which the sibling `except Exception` cannot catch, so the
+            # real cmake failure was destroyed at the moment it mattered most.
+            "stderr": (
+                e.stderr.decode(errors="replace")
+                if isinstance(e.stderr, bytes)
+                else e.stderr
+            ),
         }
     except Exception as e:
         if 'original_dir' in locals():
