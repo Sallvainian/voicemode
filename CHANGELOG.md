@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Fedora Atomic support — Silverblue, Kinoite, Bazzite, Bluefin
+
+The installer previously ran `sudo dnf install` on anything reporting
+`ID=fedora`. On Atomic variants that can never succeed: `/usr` is read-only,
+and Bazzite ships a `dnf` shim that refuses `install` outright, so the
+dependency step failed and took the rest of the run with it.
+
+- **Atomic systems are now detected** via `/run/ostree-booted`, and reported in
+  the install log as `is_ostree` alongside the detected Homebrew prefix.
+- **Dependencies install through Homebrew** on these systems — no root, no
+  reboot — with a mapping from Fedora RPM names to their homebrew-core
+  formulae. Anything with no Homebrew equivalent now prints the
+  `rpm-ostree install` command plus the required reboot, and the `distrobox`
+  alternative, instead of failing with a bare `dnf` error.
+- **`python3-devel` is skipped** on Atomic: voice-mode installs via
+  `uv tool install`, which builds against uv's managed CPython and ships its
+  own headers.
+
+### Fixed
+
+#### Dependency checks no longer report false negatives
+
+Several checks asked `rpm -q` whether a package was installed, which reports
+missing whenever the dependency was satisfied by anything other than an RPM —
+Homebrew, Nix, or a bundled toolchain. Checks now test for the capability
+rather than the packaging:
+
+- `alsa-lib-devel` → `pkg-config --exists alsa` (the check the whisper section
+  already used).
+- `python3-devel` → probes for `Python.h` under `sysconfig`, so uv-managed
+  interpreters count.
+- `portaudio` → probes for a loadable `libportaudio`, since `sounddevice`
+  dlopens it through cffi rather than linking at build time.
+- `portaudio-devel` → `pkg-config --exists portaudio-2.0`.
+- `pulseaudio` / `pulseaudio-utils` → accept `pactl`, which PipeWire provides
+  on modern Fedora without a `pulseaudio` binary or RPM.
+
+Homebrew's `pkgconfig` directories are now added to `PKG_CONFIG_PATH` when
+running check commands. Homebrew is not on pkg-config's default search path on
+Linux, so `brew install alsa-lib` was previously invisible to `pkg-config`
+even though the compiler would find the headers.
+
 ## [8.12.0] - 2026-07-21
 
 ### Fixed
